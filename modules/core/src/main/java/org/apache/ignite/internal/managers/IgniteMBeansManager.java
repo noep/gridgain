@@ -174,6 +174,8 @@ public class IgniteMBeansManager {
         registerExecutorMBean("GridSchemaExecutor", schemaExecSvc);
         registerExecutorMBean("GridRebalanceExecutor", rebalanceExecSvc);
 
+        registerStripedExecutorMBean("GridDataStreamExecutor", dataStreamExecSvc);
+
         if (idxExecSvc != null)
             registerExecutorMBean("GridIndexingExecutor", idxExecSvc);
 
@@ -182,10 +184,7 @@ public class IgniteMBeansManager {
 
         if (stripedExecSvc != null) {
             // striped executor uses a custom adapter
-            registerMBean("Thread Pools",
-                "StripedExecutor",
-                new StripedExecutorMXBeanAdapter(stripedExecSvc),
-                StripedExecutorMXBean.class);
+            registerStripedExecutorMBean("StripedExecutor", stripedExecSvc);
         }
 
         if (customExecSvcs != null) {
@@ -219,6 +218,17 @@ public class IgniteMBeansManager {
      */
     private void registerExecutorMBean(String name, ExecutorService exec) throws IgniteCheckedException {
         registerMBean("Thread Pools", name, new ThreadPoolMXBeanAdapter(exec), ThreadPoolMXBean.class);
+    }
+
+    /**
+     * Registers a {@link StripedExecutorMXBean} for an striped executor.
+     *
+     * @param name name of the bean to register
+     * @param exec executor to register a bean for
+     * @throws IgniteCheckedException if registration fails.
+     */
+    private void registerStripedExecutorMBean(String name, StripedExecutor exec) throws IgniteCheckedException {
+        registerMBean("Thread Pools", name, new StripedExecutorMXBeanAdapter(exec), StripedExecutorMXBean.class);
     }
 
     /**
