@@ -48,11 +48,7 @@ import org.apache.ignite.internal.processors.cache.persistence.tree.BPlusTree;
 import org.apache.ignite.internal.processors.cache.persistence.tree.reuse.ReuseList;
 import org.apache.ignite.internal.processors.failure.FailureProcessor;
 import org.apache.ignite.internal.processors.query.GridQueryTypeDescriptor;
-import org.apache.ignite.internal.processors.query.h2.DurableBackgroundCleanupIndexTreeTask;
-import org.apache.ignite.internal.processors.query.h2.H2Cursor;
-import org.apache.ignite.internal.processors.query.h2.H2RowCache;
-import org.apache.ignite.internal.processors.query.h2.H2Utils;
-import org.apache.ignite.internal.processors.query.h2.IgniteH2Indexing;
+import org.apache.ignite.internal.processors.query.h2.*;
 import org.apache.ignite.internal.processors.query.h2.database.inlinecolumn.InlineIndexColumnFactory;
 import org.apache.ignite.internal.processors.query.h2.opt.GridH2Cursor;
 import org.apache.ignite.internal.processors.query.h2.opt.GridH2RowDescriptor;
@@ -540,8 +536,13 @@ public class H2TreeIndex extends H2TreeIndexBase {
                 List<Long> rootPages = new ArrayList<>(segments.length);
                 List<H2Tree> trees = new ArrayList<>(segments.length);
 
+                IoStatisticsHolder stats = null;
+
                 for (int i = 0; i < segments.length; i++) {
                     H2Tree tree = segments[i];
+
+                    if (stats == null)
+                        stats = tree.statisticsHolder();
 
                     if (async) {
                         tree.markDestroyed();
@@ -554,6 +555,9 @@ public class H2TreeIndex extends H2TreeIndexBase {
 
                     dropMetaPage(i);
                 }
+
+                if (stats != null)
+                    ctx.metric().remove(stats.metricRegistryName());
 
                 if (async) {
                     DurableBackgroundTask task = new DurableBackgroundCleanupIndexTreeTask(

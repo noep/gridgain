@@ -66,4 +66,9 @@ public class IoStatisticsHolderNoOp implements IoStatisticsHolder {
     @Override public void resetStatistics() {
         // No-op.
     }
+
+    /** {@inheritDoc} */
+    @Override public String metricRegistryName() {
+        return null;
+    }
 }

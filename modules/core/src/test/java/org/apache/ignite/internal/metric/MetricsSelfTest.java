@@ -31,6 +31,7 @@ import org.apache.ignite.internal.processors.metric.impl.HistogramMetric;
 import org.apache.ignite.internal.processors.metric.impl.HitRateMetric;
 import org.apache.ignite.internal.processors.metric.impl.IntMetricImpl;
 import org.apache.ignite.internal.processors.metric.impl.LongAdderMetric;
+import org.apache.ignite.internal.util.typedef.T2;
 import org.apache.ignite.internal.util.typedef.internal.U;
 import org.apache.ignite.spi.metric.BooleanMetric;
 import org.apache.ignite.spi.metric.DoubleMetric;
@@ -45,6 +46,7 @@ import org.junit.Test;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.ignite.internal.processors.metric.impl.MetricUtils.fromFullName;
 import static org.apache.ignite.internal.processors.metric.impl.MetricUtils.histogramBucketNames;
 import static org.apache.ignite.testframework.GridTestUtils.runAsync;
 import static org.junit.Assert.assertArrayEquals;
@@ -57,7 +59,7 @@ public class MetricsSelfTest extends GridCommonAbstractTest {
     /** */
     @Before
     public void setUp() throws Exception {
-        mreg = new MetricRegistry("type", "group", log);
+        mreg = new MetricRegistry("type", "group", name -> null, name -> null, log);
     }
 
     /** */
@@ -267,7 +269,7 @@ public class MetricsSelfTest extends GridCommonAbstractTest {
     /** */
     @Test
     public void testGetMetrics() {
-        MetricRegistry mreg = new MetricRegistry("group", "group", log);
+        MetricRegistry mreg = new MetricRegistry("group", "group", name -> null, name -> null, log);
 
         mreg.longMetric("test1", "");
         mreg.longMetric("test2", "");
@@ -288,7 +290,7 @@ public class MetricsSelfTest extends GridCommonAbstractTest {
     /** */
     @Test
     public void testRemove() {
-        MetricRegistry mreg = new MetricRegistry("group", "group", log);
+        MetricRegistry mreg = new MetricRegistry("group", "group", name -> null, name -> null, log);
 
         AtomicLongMetric cntr = mreg.longMetric("my.name", null);
         AtomicLongMetric cntr2 = mreg.longMetric("my.name.x", null);
@@ -350,6 +352,13 @@ public class MetricsSelfTest extends GridCommonAbstractTest {
         }, names);
     }
 
+    /** */
+    @Test
+    public void testFromFullName() {
+        assertEquals(new T2<>("org.apache", "ignite"), fromFullName("org.apache.ignite"));
+
+        assertEquals(new T2<>("org", "apache"), fromFullName("org.apache"));
+    }
 
     /** */
     private void run(Runnable r, int cnt) throws org.apache.ignite.IgniteCheckedException {
