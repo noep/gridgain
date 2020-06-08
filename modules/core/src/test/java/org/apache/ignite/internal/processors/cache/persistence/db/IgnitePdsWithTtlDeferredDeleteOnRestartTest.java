@@ -200,13 +200,11 @@ public class IgnitePdsWithTtlDeferredDeleteOnRestartTest extends GridCommonAbstr
 
             srv.cluster().baselineAutoAdjustEnabled(false);
 
-            startGrid(1);
-
             startGrid(2);
 
             srv.cluster().active(true);
 
-            ExpiryPolicy plc = AccessedExpiryPolicy.factoryOf(new Duration(TimeUnit.SECONDS, 60)).create();
+            ExpiryPolicy plc = AccessedExpiryPolicy.factoryOf(new Duration(TimeUnit.SECONDS, 20)).create();
 
             IgniteCache<Integer, byte[]> cache0 = srv.cache(CACHE_NAME);
 
@@ -218,14 +216,10 @@ public class IgnitePdsWithTtlDeferredDeleteOnRestartTest extends GridCommonAbstr
 
             srv.cluster().setBaselineTopology(srv.cluster().topologyVersion());
 
-            GridTestUtils.waitForCondition(new GridAbsPredicate() {
-                @Override public boolean apply() {
-                    return cache0.localSizeLong(CachePeekMode.ALL) == 0;
-                }
-            }, 20_000);
 
-            //awaitPartitionMapExchange();
+            //Thread.sleep(20000);
 
+            //cache0.put(1, new byte[1024]);
             //restart stopped grid
             startGrid(2);
 

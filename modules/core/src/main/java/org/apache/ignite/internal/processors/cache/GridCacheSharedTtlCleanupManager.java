@@ -24,6 +24,7 @@ import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.failure.FailureContext;
 import org.apache.ignite.internal.IgniteInterruptedCheckedException;
 import org.apache.ignite.internal.NodeStoppingException;
+import org.apache.ignite.internal.processors.cluster.BaselineTopology;
 import org.apache.ignite.internal.util.typedef.X;
 import org.apache.ignite.internal.util.typedef.internal.U;
 import org.apache.ignite.internal.util.worker.GridWorker;
@@ -160,6 +161,10 @@ public class GridCacheSharedTtlCleanupManager extends GridCacheSharedManagerAdap
                     blockingSectionEnd();
                 }
 
+                if (!isLocalNodeInBaseline())
+                    for (Map.Entry<Integer, GridCacheTtlManager> mgr : mgrs.entrySet())
+                        unregister(mgr.getValue());
+
                 assert !cctx.kernalContext().recoveryMode();
 
                 final AtomicBoolean expiredRemains = new AtomicBoolean();
@@ -218,6 +223,15 @@ public class GridCacheSharedTtlCleanupManager extends GridCacheSharedManagerAdap
                 else if (err != null)
                     cctx.kernalContext().failure().process(new FailureContext(SYSTEM_WORKER_TERMINATION, err));
             }
+        }
+
+        /**
+         * @return {@code true} if local node is in baseline and {@code false} otherwise.
+         */
+        private boolean isLocalNodeInBaseline() {
+            BaselineTopology topology = cctx.discovery().discoCache().state().baselineTopology();
+
+            return topology != null && topology.consistentIds().contains(cctx.localNode().consistentId());
         }
     }
 }
