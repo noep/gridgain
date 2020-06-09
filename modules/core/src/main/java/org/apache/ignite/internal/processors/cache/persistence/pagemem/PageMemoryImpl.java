@@ -814,6 +814,12 @@ public class PageMemoryImpl implements PageMemoryEx {
                 }
             }
             else if (relPtr == OUTDATED_REL_PTR) {
+                try {
+                    Thread.sleep(1000);
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 assert PageIdUtils.pageIndex(pageId) == 0 : fullId;
 
                 relPtr = refreshOutdatedPage(seg, grpId, pageId, false);

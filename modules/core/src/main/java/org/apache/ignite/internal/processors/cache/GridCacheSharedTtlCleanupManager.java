@@ -16,6 +16,7 @@
 
 package org.apache.ignite.internal.processors.cache;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,6 +25,7 @@ import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.failure.FailureContext;
 import org.apache.ignite.internal.IgniteInterruptedCheckedException;
 import org.apache.ignite.internal.NodeStoppingException;
+import org.apache.ignite.internal.processors.cache.distributed.dht.preloader.GridDhtPartitionsExchangeFuture;
 import org.apache.ignite.internal.processors.cluster.BaselineTopology;
 import org.apache.ignite.internal.util.typedef.X;
 import org.apache.ignite.internal.util.typedef.internal.U;
@@ -160,10 +162,6 @@ public class GridCacheSharedTtlCleanupManager extends GridCacheSharedManagerAdap
                 finally {
                     blockingSectionEnd();
                 }
-
-                if (!isLocalNodeInBaseline())
-                    for (Map.Entry<Integer, GridCacheTtlManager> mgr : mgrs.entrySet())
-                        unregister(mgr.getValue());
 
                 assert !cctx.kernalContext().recoveryMode();
 
